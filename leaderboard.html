@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gauntlet Leaderboard</title>
+<style>
+:root{
+  --bg:#0f172a;
+  --panel:#111827;
+  --panel-2:#020617;
+  --text:#f8fafc;
+  --muted:#94a3b8;
+  --line:#22c55e;
+  --gold:#facc15;
+  --silver:#d1d5db;
+  --bronze:#c08457;
+  --dark:#020617;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:20px;
+  font-family:Arial, Helvetica, sans-serif;
+  color:var(--text);
+}
+
+.wrapper{
+  width:500px;
+  min-height:500px;
+  overflow:hidden;
+  position:relative;
+  margin:0 auto;
+  background:var(--panel-2);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 12px 32px rgba(0,0,0,.35);
+}
+
+.board{
+  width:100%;
+  min-height:500px;
+  padding:22px 24px 18px;
+  background:
+    radial-gradient(circle at top, rgba(250,204,21,.12), transparent 35%),
+    linear-gradient(180deg, #0f172a 0%, #020617 100%);
+}
+
+.title{
+  border:2px solid var(--line);
+  padding:7px 10px;
+  text-align:center;
+  font-size:24px;
+  line-height:1.1;
+  font-weight:900;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+  text-shadow:2px 2px 0 #000;
+  margin-bottom:24px;
+}
+
+.section{
+  margin-top:22px;
+}
+
+.section:first-of-type{
+  margin-top:0;
+}
+
+.section-title{
+  text-align:center;
+  font-size:22px;
+  line-height:1.1;
+  font-weight:900;
+  margin:0 0 8px;
+  text-shadow:2px 2px 0 #000;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:72px 1fr 92px;
+  width:100%;
+}
+
+.header{
+  font-size:18px;
+  font-weight:900;
+  text-align:center;
+  padding:2px 6px 6px;
+  text-shadow:2px 2px 0 #000;
+}
+
+.row{
+  color:#020617;
+  min-height:30px;
+  display:contents;
+}
+
+.cell{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:30px;
+  padding:4px 8px;
+  font-size:19px;
+  font-weight:900;
+  border-top:1px solid rgba(2,6,23,.35);
+}
+
+.adventurer{
+  justify-content:center;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.gold .cell{ background:var(--gold); }
+.silver .cell{ background:var(--silver); }
+.bronze .cell{ background:var(--bronze); }
+
+.updated{
+  text-align:right;
+  color:var(--muted);
+  font-size:11px;
+  margin-top:18px;
+}
+
+.error{
+  color:#fecaca;
+  text-align:center;
+  padding:32px 12px;
+  font-weight:700;
+}
+
+@media (max-width:520px){
+  body{
+    padding:0;
+  }
+
+  .wrapper{
+    width:100vw;
+    min-height:500px;
+  }
+
+  .board{
+    padding:20px 18px 16px;
+  }
+
+  .title{
+    font-size:21px;
+  }
+
+  .section-title{
+    font-size:20px;
+  }
+
+  .header{
+    font-size:16px;
+  }
+
+  .cell{
+    font-size:17px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+  <main class="board" aria-live="polite">
+    <div class="title" id="leaderboardTitle">GAUNTLET LEADERBOARD</div>
+
+    <section class="section">
+      <h2 class="section-title">Speed Champions</h2>
+      <div class="grid" aria-label="Speed Champions leaderboard">
+        <div class="header">Rank</div>
+        <div class="header">Adventurer</div>
+        <div class="header">Time</div>
+        <div id="speedRows" style="display:contents;"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Streak Masters</h2>
+      <div class="grid" aria-label="Streak Masters leaderboard">
+        <div class="header">Rank</div>
+        <div class="header">Adventurer</div>
+        <div class="header">Streak</div>
+        <div id="streakRows" style="display:contents;"></div>
+      </div>
+    </section>
+
+    <div class="updated" id="updated"></div>
+  </main>
+</div>
+
+<script>
+const DATA_URL = "leaderboard.json";
+const MEDAL_CLASSES = ["gold", "silver", "bronze"];
+
+function escapeHtml(value){
+  return String(value ?? "").replace(/[&<>"']/g, character => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#039;"
+  }[character]));
+}
+
+function renderRows(items){
+  return (items || []).slice(0, 3).map((item, index) => {
+    const medalClass = MEDAL_CLASSES[index] || "";
+    return `
+      <div class="row ${medalClass}">
+        <div class="cell">${escapeHtml(item.rank)}</div>
+        <div class="cell adventurer" title="${escapeHtml(item.adventurer)}">${escapeHtml(item.adventurer)}</div>
+        <div class="cell">${escapeHtml(item.value)}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function formatUpdated(value){
+  if(!value) return "";
+  const date = new Date(value);
+  if(Number.isNaN(date.getTime())) return `Updated ${escapeHtml(value)}`;
+  return `Updated ${date.toLocaleString()}`;
+}
+
+async function loadLeaderboard(){
+  try{
+    const response = await fetch(`${DATA_URL}?v=${Date.now()}`, { cache:"no-store" });
+    if(!response.ok){
+      throw new Error(`Could not load ${DATA_URL}`);
+    }
+
+    const data = await response.json();
+
+    document.getElementById("leaderboardTitle").textContent = data.title || "GAUNTLET LEADERBOARD";
+    document.getElementById("speedRows").innerHTML = renderRows(data.speedChampions);
+    document.getElementById("streakRows").innerHTML = renderRows(data.streakMasters);
+    document.getElementById("updated").textContent = formatUpdated(data.updated);
+  } catch(error){
+    document.getElementById("leaderboardTitle").textContent = "LEADERBOARD UNAVAILABLE";
+    document.getElementById("speedRows").innerHTML = "";
+    document.getElementById("streakRows").innerHTML = "";
+    document.getElementById("updated").innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
+  }
+}
+
+loadLeaderboard();
+setInterval(loadLeaderboard, 120000);
+</script>
+
+</body>
+</html>
+
