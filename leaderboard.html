@@ -182,7 +182,7 @@ body{
       <h2 class="section-title">Speed Champions</h2>
       <div class="grid" aria-label="Speed Champions leaderboard">
         <div class="header">Rank</div>
-        <div class="header">Adventurer</div>
+        <div class="header" id="speedParticipantHeader">Adventurer</div>
         <div class="header">Time</div>
         <div id="speedRows" style="display:contents;"></div>
       </div>
@@ -192,7 +192,7 @@ body{
       <h2 class="section-title">Streak Masters</h2>
       <div class="grid" aria-label="Streak Masters leaderboard">
         <div class="header">Rank</div>
-        <div class="header">Adventurer</div>
+        <div class="header" id="streakParticipantHeader">Adventurer</div>
         <div class="header">Streak</div>
         <div id="streakRows" style="display:contents;"></div>
       </div>
@@ -227,10 +227,11 @@ function escapeHtml(value){
 function renderRows(items){
   return (items || []).slice(0, 3).map((item, index) => {
     const medalClass = MEDAL_CLASSES[index] || "";
+    const participant = item.agent || item.adventurer || "";
     return `
       <div class="row ${medalClass}">
         <div class="cell">${escapeHtml(item.rank)}</div>
-        <div class="cell adventurer" title="${escapeHtml(item.adventurer)}">${escapeHtml(item.adventurer)}</div>
+        <div class="cell adventurer" title="${escapeHtml(participant)}">${escapeHtml(participant)}</div>
         <div class="cell">${escapeHtml(item.value)}</div>
       </div>
     `;
@@ -254,6 +255,11 @@ async function loadLeaderboard(){
     const data = await response.json();
 
     document.getElementById("leaderboardTitle").textContent = data.title || "GAUNTLET LEADERBOARD";
+
+    const participantLabel = data.participantLabel || "Adventurer";
+    document.getElementById("speedParticipantHeader").textContent = participantLabel;
+    document.getElementById("streakParticipantHeader").textContent = participantLabel;
+
     document.getElementById("speedRows").innerHTML = renderRows(data.speedChampions);
     document.getElementById("streakRows").innerHTML = renderRows(data.streakMasters);
     document.getElementById("updated").textContent = formatUpdated(data.updated);
