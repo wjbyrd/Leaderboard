@@ -1,1 +1,7 @@
-{"title":"THE AGENCY PROTOCOL LEADERBOARD","updated":"2026-05-10T21:00:06.8415364Z","speedChampions":[{"rank":"1","adventurer":"ObsidianWarden7908","value":"12:42","sortValue":"762"},{"rank":"2","adventurer":"","value":"#VALUE!","sortValue":"#VALUE!"},{"rank":"3","adventurer":"","value":"#VALUE!","sortValue":"#VALUE!"}],"streakMasters":[{"rank":"1","adventurer":"ObsidianWarden7908","value":"36","sortValue":"36"},{"rank":"2","adventurer":"","value":"","sortValue":"#VALUE!"},{"rank":"3","adventurer":"","value":"","sortValue":"#VALUE!"}]}
+{
+  "title": "THE AGENCY PROTOCOL LEADERBOARD",
+  "participantLabel": "Agent",
+  "updated": "2026-05-10T19:10:00.3880512Z",
+  "speedChampions": [],
+  "streakMasters": []
+}
