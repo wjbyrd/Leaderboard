@@ -203,7 +203,15 @@ body{
 </div>
 
 <script>
-const DATA_URL = "leaderboard.json";
+const params = new URLSearchParams(window.location.search);
+const board = params.get("board") || "foundry";
+
+const DATA_FILES = {
+  foundry: "leaderboard.json",
+  managerial: "managerialleaderboard.json"
+};
+
+const DATA_URL = DATA_FILES[board] || DATA_FILES.foundry;
 const MEDAL_CLASSES = ["gold", "silver", "bronze"];
 
 function escapeHtml(value){
